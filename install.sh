@@ -12,7 +12,9 @@ exec 9>/run/element-stack-install.lock
 flock -n 9 || { echo 'Another installation is running.'; exit 1; }
 [[ -n $DOMAIN ]] || read -rp 'Base domain (example.com): ' DOMAIN
 [[ -n $PUBLIC_IP ]] || read -rp 'Server public IPv4: ' PUBLIC_IP
-[[ -n $EMAIL ]] || read -rp 'Email for certificate expiry notices (optional): ' EMAIL
+if [[ -z $EMAIL && -t 0 ]]; then
+    read -rp 'Email for certificate expiry notices (optional): ' EMAIL
+fi
 export DOMAIN PUBLIC_IP
 # shellcheck source=/dev/null
 source /etc/os-release
@@ -54,6 +56,9 @@ if [[ ! -e $ROOT/state.json ]]; then
     }
     if [[ -e /etc/nginx/modules-enabled/99-element-stack-stream.conf || -e /etc/nginx/sites-available/element-stack.conf ]]; then
         echo 'Existing element-stack nginx files found without installation state; inspect manually.'; exit 1
+    fi
+    if command -v nginx >/dev/null && nginx -T 2>/dev/null | grep -Eq '^[[:space:]]*stream[[:space:]]*\{'; then
+        echo 'An nginx stream block already exists; integrate SNI routing manually.'; exit 1
     fi
 fi
 export DEBIAN_FRONTEND=noninteractive

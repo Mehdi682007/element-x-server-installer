@@ -111,7 +111,7 @@ sudo /opt/element-stack/manage.sh backup
 
 ```bash
 python3 -m unittest -v test_config.py
-bash -n install.sh manage.sh
+bash -n install.sh && bash -n manage.sh
 ```
 
 - [Element Call self-hosting](https://github.com/element-hq/element-call/blob/main/docs/self_hosting.md)
