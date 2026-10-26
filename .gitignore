@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+state.json
+admin-credentials.txt
+backups/
+*.tar.gz
+*.pem
+*.key
+runtime/
