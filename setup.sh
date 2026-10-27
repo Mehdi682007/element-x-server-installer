@@ -11,7 +11,7 @@ EMAIL=${EMAIL:-}
 exec 9>/run/element-stack-install.lock
 flock -n 9 || { echo 'Another installation is running.'; exit 1; }
 [[ -n $DOMAIN ]] || read -rp 'Base domain (example.com): ' DOMAIN
-[[ -n $PUBLIC_IP ]] || read -rp 'Server public IPv4: ' PUBLIC_IP
+PUBLIC_IP=$(PUBLIC_IP="$PUBLIC_IP" python3 "$SOURCE/detect_ip.py")
 if [[ -z $EMAIL && -t 0 && ${EMAIL_PROVIDED:-0} != 1 ]]; then
     read -rp 'Email for certificate expiry notices (optional): ' EMAIL
 fi
@@ -102,7 +102,7 @@ for helper in manager.py accounts.py menu.sh; do
 done
 # Keep the installer outside runtime data so purge can still return to its menu.
 mkdir -p /opt/element-x-installer
-for helper in install.sh setup.sh menu.sh manage.sh generate.py create_admin.py registration.py manager.py accounts.py; do
+for helper in install.sh setup.sh menu.sh manage.sh generate.py create_admin.py registration.py manager.py accounts.py detect_ip.py; do
     if [[ $(readlink -f "$SOURCE/$helper") != "/opt/element-x-installer/$helper" ]]; then
         install -m 700 "$SOURCE/$helper" "/opt/element-x-installer/$helper"
     fi

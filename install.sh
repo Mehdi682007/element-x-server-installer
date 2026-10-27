@@ -11,7 +11,7 @@ if [[ ! -f $SOURCE/menu.sh || ! -f $SOURCE/setup.sh ]]; then
     REPO=https://api.github.com/repos/Mehdi682007/element-x-server-installer
     COMMIT=$(curl --retry 3 -fsSL "$REPO/commits/main" | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
     [[ $COMMIT =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid repository revision'; exit 1; }
-    for file in install.sh setup.sh menu.sh manage.sh generate.py create_admin.py registration.py manager.py accounts.py; do
+    for file in install.sh setup.sh menu.sh manage.sh generate.py create_admin.py registration.py manager.py accounts.py detect_ip.py; do
         curl --retry 3 -fsSL "https://raw.githubusercontent.com/Mehdi682007/element-x-server-installer/$COMMIT/$file" -o "$SOURCE/$file"
         chmod 700 "$SOURCE/$file"
     done

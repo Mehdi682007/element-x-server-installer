@@ -73,7 +73,7 @@ install_stack() {
         echo "Existing installation found; domain, IP and secrets will be preserved."
     else
         read -rp "🏠 Enter base domain (e.g. example.com): " domain || return
-        read -rp "📌 Enter server public IPv4: " ip || return
+        ip=$(python3 "$(dirname -- "$engine")/detect_ip.py") || return
     fi
     read -rp "✉️  Let's Encrypt email (optional): " email || return
     echo "===== INSTALL CONFIGURATION SUMMARY ====="

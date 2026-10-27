@@ -43,7 +43,7 @@ apt-get install -y curl python3
 bash <(curl -fsSL https://raw.githubusercontent.com/Mehdi682007/element-x-server-installer/main/install.sh)
 ```
 
-گزینه **۱** را انتخاب و دامنه، IP و ایمیل اختیاری را وارد کنید. برای بازکردن مجدد منو:
+گزینه **۱** را انتخاب و دامنه و ایمیل اختیاری را وارد کنید. IPv4 عمومی خودکار تشخیص داده می‌شود؛ فقط در صورت شکست تشخیص، ورود دستی درخواست می‌شود. IP نصب موجود حفظ می‌شود. برای تعیین IP خاص می‌توانید منو را با `sudo env PUBLIC_IP=203.0.113.10 pd-element-x` اجرا کنید؛ آدرس نمونه را جایگزین کنید. برای بازکردن مجدد منو:
 
 ```bash
 sudo pd-element-x

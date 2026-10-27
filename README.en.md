@@ -43,7 +43,7 @@ apt-get install -y curl python3
 bash <(curl -fsSL https://raw.githubusercontent.com/Mehdi682007/element-x-server-installer/main/install.sh)
 ```
 
-Choose option **1** and enter your domain, IP address, and optional email. To reopen the menu:
+Choose option **1** and enter your domain and optional email. The public IPv4 address is detected automatically; manual input is requested only if detection fails. Existing installations keep their saved IP. To specify an IP for a new installation, run `sudo env PUBLIC_IP=203.0.113.10 pd-element-x` with your own address. To reopen the menu:
 
 ```bash
 sudo pd-element-x
