@@ -9,4 +9,4 @@ jobs:
       - run: python3 -m unittest discover -v
       - run: for file in install.sh setup.sh menu.sh manage.sh; do bash -n "$file"; done
       - run: shellcheck install.sh setup.sh menu.sh manage.sh
-      - run: bash install.sh --preview | tee /tmp/menu.txt; grep -q '17) 🚪 Exit' /tmp/menu.txt
+      - run: bash install.sh --preview | tee /tmp/menu.txt; grep -q '18) 🚪 Exit' /tmp/menu.txt

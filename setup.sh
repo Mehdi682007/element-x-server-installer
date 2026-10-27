@@ -160,6 +160,6 @@ python3 "$ROOT/create_admin.py"
 docker compose images --format json > "$ROOT/installed-images.json"
 echo "Installed. Web: https://element.$DOMAIN | Homeserver: https://matrix.$DOMAIN"
 echo "Initial admin password: $ROOT/admin-credentials.txt (root-only; keep private)."
-echo 'View saved administrator login details or change credentials: sudo pd-element-x -> option 18.'
+echo 'View saved administrator login details or change credentials: sudo pd-element-x -> option 17.'
 echo "Create more users: sudo $ROOT/manage.sh create-user"
 echo 'Next: test voice and video between two real devices on different networks.'

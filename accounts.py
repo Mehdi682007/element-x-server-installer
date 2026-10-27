@@ -147,7 +147,7 @@ class Accounts:
 
     def check_reactivation(self, name):
         if not self.get_user(name).get('deactivated'):
-            raise ValueError('This account is already active. For admin password changes use menu option 18.')
+            raise ValueError('This account is already active. For admin password changes use menu option 17.')
 
     def save_credentials(self, name, password):
         user_id = self.mxid(name)

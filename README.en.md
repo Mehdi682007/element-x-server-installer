@@ -53,7 +53,7 @@ sudo pd-element-x
 
 - Option **3** creates a regular user; **2** creates an administrator; **4** generates a random password.
 - Initial admin credentials are saved in `/opt/element-stack/admin-credentials.txt`. Keep this file private.
-- Option **18** shows saved admin credentials, changes an admin password, or creates a new primary admin username. Password changes require an admin login; if forgotten, create a new admin through this option. Matrix usernames cannot be renamed: the new account does not inherit history or memberships, and the old account is retained. Passwords changed outside this tool may differ from the saved value.
+- Option **17** shows saved admin credentials, changes an admin password, or creates a new primary admin username. Password changes require an admin login; if forgotten, create a new admin through this option. Matrix usernames cannot be renamed: the new account does not inherit history or memberships, and the old account is retained. Passwords changed outside this tool may differ from the saved value.
 - In Element X, set your server to `https://matrix.example.com`.
 - Web client: `https://element.example.com`. Replace `example.com` with your domain.
 

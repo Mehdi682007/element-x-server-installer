@@ -51,8 +51,8 @@ print_menu() {
     echo "14) 📞 Call Diagnostics (MatrixRTC / LiveKit / TURN)"
     echo "15) ⬆️  Update Element Web"
     echo "16) 🧨 Full uninstall / purge"
-    echo "17) 🚪 Exit"
-    echo "18) 🔑 Administrator login / password / new username"
+    echo "17) 🔑 Administrator login / password / new username"
+    echo "18) 🚪 Exit"
     echo "=================================="
 }
 
@@ -194,7 +194,7 @@ dispatch() {
         14) operation diagnostics ;;
         15) update_element ;;
         16) operation purge ;;
-        18) user_action admin-settings ;;
+        17) user_action admin-settings ;;
         *) echo 'Invalid option.'; return 1 ;;
     esac
 }
@@ -211,8 +211,8 @@ while true; do
     print_header
     print_menu
     read -rp 'Choose an option [1-18]: ' choice || exit 0
-    [[ $choice != 17 ]] || { echo 'Bye.'; exit 0; }
-    if [[ ! $choice =~ ^([1-9]|1[0-6]|18)$ ]]; then
+    [[ $choice != 18 ]] || { echo 'Bye.'; exit 0; }
+    if [[ ! $choice =~ ^([1-9]|1[0-7])$ ]]; then
         echo 'Invalid option.'
     elif dispatch "$choice"; then
         printf '%s option=%s result=ok\n' "$(date -u +%FT%TZ)" "$choice" >> "$LOG_FILE"
