@@ -5,10 +5,12 @@ import getpass
 import hashlib
 import hmac
 import json
+import os
 from pathlib import Path
 import re
 import secrets
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -99,6 +101,9 @@ class Accounts:
         if self.token:
             try:
                 self.request('POST', '/_matrix/client/v3/logout', {}, self.token)
+            except APIError as error:
+                if error.status != 401:
+                    raise
             finally:
                 self.token = None
 
@@ -135,16 +140,91 @@ class Accounts:
 
     def reactivate(self, name, password, admin=False):
         user_id = self.mxid(name)
-        self.get_user(user_id)  # Reject a nonexistent account instead of creating one accidentally.
+        self.check_reactivation(user_id)
         self.guard_admin(user_id)
         return self.request('PUT', '/_synapse/admin/v2/users/' + urllib.parse.quote(user_id, safe=''),
             {'password': password, 'admin': admin, 'deactivated': False, 'logout_devices': True}, self.token)
+
+    def check_reactivation(self, name):
+        if not self.get_user(name).get('deactivated'):
+            raise ValueError('This account is already active. For admin password changes use menu option 18.')
+
+    def save_credentials(self, name, password):
+        user_id = self.mxid(name)
+        domain = json.loads((self.root / 'state.json').read_text())['domain']
+        data = (f'Homeserver: https://matrix.{domain}\nWeb: https://element.{domain}\n'
+                f'User: {user_id}\nPassword: {password}\n')
+        fd, temporary = tempfile.mkstemp(prefix='.admin-', dir=self.root)
+        try:
+            with os.fdopen(fd, 'w') as stream:
+                stream.write(data)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.chmod(temporary, 0o600)
+            os.replace(temporary, self.root / 'admin-credentials.txt')
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+
+    def change_admin_password(self, name, password):
+        user_id = self.mxid(name)
+        info = self.get_user(user_id)
+        if not info.get('admin') or info.get('deactivated'):
+            raise ValueError('Choose an active administrator account')
+        self.request('POST', '/_synapse/admin/v1/reset_password/' + urllib.parse.quote(user_id, safe=''),
+                     {'new_password': password, 'logout_devices': True}, self.token)
+        self.save_credentials(user_id, password)
+        if user_id == self.admin_id:
+            self.logout()  # Synapse may preserve the session making the reset request.
+
+
+def admin_settings(api):
+    print('1) Show saved administrator login details')
+    print('2) Change administrator password (requires an admin login)')
+    print('3) Create a new primary admin username (also works if password is forgotten)')
+    print('4) Back')
+    choice = input('Choose [1-4]: ').strip()
+    if choice == '1':
+        path = api.root / 'admin-credentials.txt'
+        if not path.exists():
+            raise ValueError('No saved credentials. Use option 3 to create a new administrator.')
+        print('Saved credentials; a password changed outside this tool may differ.')
+        print(path.read_text())
+        print('Keep these details private. They are not copied to the menu log.')
+    elif choice == '2':
+        api.authenticate()
+        name = input(f'Admin username [Enter for {api.admin_id}]: ').strip() or api.admin_id
+        info = api.get_user(name)
+        if not info.get('admin') or info.get('deactivated'):
+            raise ValueError('Choose an active administrator account')
+        print('All sessions of this account will be logged out. Keep your Recovery Key for encrypted history.')
+        password = prompt_password()
+        if input('Change password and save this as the primary admin? (y/n): ').lower() != 'y':
+            print('Cancelled.'); return
+        api.change_admin_password(name, password)
+        print('✅ Password changed and saved in root-only admin-credentials.txt.')
+    elif choice == '3':
+        print('Matrix usernames cannot be renamed. This creates a separate ADMIN account.')
+        print('The old account remains unchanged; messages, room memberships and keys are not transferred.')
+        name = input('New admin username: ').strip()
+        api.mxid(name)
+        password = prompt_password()
+        if input('Create and save this as the primary admin? (y/n): ').lower() != 'y':
+            print('Cancelled.'); return
+        user_id = api.create(name, password, admin=True)
+        api.save_credentials(user_id, password)
+        print('✅ New administrator created: ' + user_id)
+        print('Login details saved in root-only admin-credentials.txt. Existing accounts are unchanged.')
+    elif choice != '4':
+        raise ValueError('Invalid option')
 
 
 def prompt_password():
     password = getpass.getpass('New password: ')
     if len(password) < 8:
         raise ValueError('Use a password of at least 8 characters')
+    if any(c in password for c in '\r\n\0'):
+        raise ValueError('Password cannot contain line breaks or null characters')
     if password != getpass.getpass('Confirm password: '):
         raise ValueError('Passwords do not match')
     return password
@@ -152,12 +232,18 @@ def prompt_password():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['create', 'list', 'reactivate', 'deactivate'])
+    parser.add_argument('action', choices=['create', 'list', 'reactivate', 'deactivate', 'admin-settings'])
     parser.add_argument('--admin', action='store_true')
     parser.add_argument('--random-password', action='store_true')
     args = parser.parse_args()
+    if os.geteuid() != 0:
+        raise ValueError('Run with sudo/root')
+    os.umask(0o077)
     api = Accounts()
     try:
+        if args.action == 'admin-settings':
+            admin_settings(api)
+            return
         if args.action == 'create':
             name = input('Enter username (localpart): ').strip()
             password = secrets.token_urlsafe(24) if args.random_password else prompt_password()
@@ -184,6 +270,7 @@ def main():
                 api.deactivate(name)
                 print('✅ User deactivated.')
             else:
+                api.check_reactivation(name)
                 api.reactivate(name, prompt_password(), args.admin)
                 print('✅ User reactivated with a new password. Previous room memberships are not restored automatically.')
     finally:
