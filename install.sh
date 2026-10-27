@@ -96,6 +96,7 @@ fi
 python3 "$SOURCE/generate.py" --directory "$ROOT" --domain "$DOMAIN" --public-ip "$PUBLIC_IP"
 install -m 700 "$SOURCE/manage.sh" "$ROOT/manage.sh"
 install -m 700 "$SOURCE/create_admin.py" "$ROOT/create_admin.py"
+install -m 700 "$SOURCE/registration.py" "$ROOT/registration.py"
 mkdir -p /var/www/element-acme/.well-known/acme-challenge
 chmod 755 /var/www/element-acme /var/www/element-acme/.well-known /var/www/element-acme/.well-known/acme-challenge
 if [[ ! -f /etc/letsencrypt/live/matrix.$DOMAIN/fullchain.pem ]]; then

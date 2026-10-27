@@ -10,6 +10,11 @@ case ${1:-help} in
     logs) docker compose logs --tail 100 "${@:2}" ;;
     restart) docker compose restart "${@:2}" ;;
     create-user) docker compose exec synapse register_new_matrix_user -c /data/homeserver.yaml http://localhost:8008 ;;
+    registration)
+        exec 9>/run/element-stack-install.lock
+        flock -n 9 || { echo 'An installation or registration change is already running.'; exit 1; }
+        python3 "$ROOT/registration.py" "${2:-status}"
+        ;;
     health)
         docker compose ps
         curl -fsS --max-time 20 "https://matrix.$DOMAIN/_matrix/client/versions" >/dev/null
@@ -39,5 +44,5 @@ case ${1:-help} in
         trap - EXIT
         echo "Private backup: $ARCHIVE — copy off-server. Old backups are not deleted automatically."
         ;;
-    *) echo "Usage: $0 {status|logs [service]|restart [service]|create-user|health|backup}" ;;
+    *) echo "Usage: $0 {status|logs [service]|restart [service]|create-user|registration [open|close|status]|health|backup}" ;;
 esac
