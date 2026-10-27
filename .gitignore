@@ -8,3 +8,13 @@ backups/
 *.pem
 *.key
 runtime/
+compose.yaml
+synapse/
+postgres/
+livekit.yaml
+certs/
+element-config.json
+nginx*.conf
+config-history/
+installed-images.json
+test-accounts.json

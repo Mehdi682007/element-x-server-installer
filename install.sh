@@ -66,6 +66,18 @@ if [[ ${SKIP_PACKAGES:-0} != 1 ]]; then
     apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 update
     apt-get -o DPkg::Lock::Timeout=120 install -y ca-certificates curl gnupg nginx libnginx-mod-stream certbot python3-yaml
     if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; then
+        # Preserve forwarding on an existing router/VPN host before a new daemon starts.
+        if ! command -v dockerd >/dev/null && [[ $(sysctl -n net.ipv4.ip_forward) == 1 ]] && iptables -S FORWARD | grep -q -- '-P FORWARD ACCEPT'; then
+            python3 - <<'PY'
+import json
+from pathlib import Path
+p = Path('/etc/docker/daemon.json')
+p.parent.mkdir(parents=True, exist_ok=True)
+data = json.loads(p.read_text()) if p.exists() else {}
+data.setdefault('ip-forward-no-drop', True)
+p.write_text(json.dumps(data, indent=2) + '\n')
+PY
+        fi
         install -m 0755 -d /etc/apt/keyrings
         curl --retry 3 -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
         chmod a+r /etc/apt/keyrings/docker.asc
