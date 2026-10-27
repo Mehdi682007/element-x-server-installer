@@ -95,7 +95,7 @@ user_action() {
     installed || return
     print_header
     echo "👥 === User Management ==="
-    python3 "$ROOT/accounts.py" "$@"
+    python3 "$SOURCE/accounts.py" "$@"
 }
 
 random_user() {
@@ -145,7 +145,7 @@ toggle_registration() {
 operation() {
     installed || return
     print_header
-    python3 "$ROOT/manager.py" "$@"
+    python3 "$SOURCE/manager.py" "$@"
 }
 
 backup_server() {
