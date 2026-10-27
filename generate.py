@@ -54,7 +54,7 @@ def generate(root, domain, public_ip):
                        'resources': [{'names': ['client', 'federation'], 'compress': False}]}],
         'database': {'name': 'psycopg2', 'args': {'user': 'synapse', 'password': state['database_password'],
                     'database': 'synapse', 'host': 'postgres', 'cp_min': 5, 'cp_max': 10}},
-        'media_store_path': '/data/media_store', 'max_upload_size': '50M',
+        'media_store_path': '/data/media_store', 'max_upload_size': f"{state.get('upload_limit_mb', 50)}M",
         'signing_key_path': '/data/signing.key', 'log_config': '/data/log.config',
         'registration_shared_secret': state['registration_secret'],
         'macaroon_secret_key': state['macaroon_secret'], 'form_secret': state['form_secret'],
@@ -122,7 +122,7 @@ def generate(root, domain, public_ip):
         'livekit': service('livekit/livekit-server:v1.13.11', network_mode='host',
             command=['--config', '/etc/livekit.yaml'],
             volumes=['./livekit.yaml:/etc/livekit.yaml:ro', './certs:/certs:ro']),
-        'element': service('ghcr.io/element-hq/element-web:v1.12.32',
+        'element': service('ghcr.io/element-hq/element-web:' + state.get('element_version', 'v1.12.32'),
             volumes=['./element-config.json:/app/config.json:ro'], ports=['127.0.0.1:18088:80']),
     }})
     names = f'{matrix} {web} {rtc} {turn}'
@@ -141,7 +141,7 @@ def generate(root, domain, public_ip):
     ssl_certificate /etc/letsencrypt/live/{matrix}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{matrix}/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    client_max_body_size 50m;
+    client_max_body_size {state.get('upload_limit_mb', 50)}M;
 '''
     headers = '''proxy_http_version 1.1;
         proxy_set_header Host $host;

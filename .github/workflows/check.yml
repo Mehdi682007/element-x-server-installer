@@ -6,6 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y python3-yaml shellcheck
-      - run: python3 -m unittest -v test_config.py
-      - run: bash -n install.sh && bash -n manage.sh
-      - run: shellcheck install.sh manage.sh
+      - run: python3 -m unittest discover -v
+      - run: for file in install.sh setup.sh menu.sh manage.sh; do bash -n "$file"; done
+      - run: shellcheck install.sh setup.sh menu.sh manage.sh
+      - run: bash install.sh --preview | tee /tmp/menu.txt; grep -q '17) 🚪 Exit' /tmp/menu.txt
